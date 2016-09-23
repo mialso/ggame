@@ -1,4 +1,5 @@
 #include <gg_validator.h>
+#include <stdlib.h>
 
 int main(int args, char *argv[])
 {
@@ -7,9 +8,8 @@ int main(int args, char *argv[])
 
 	if (0 != (res = validate_arguments(args, argv)))
 	{
-		fprintf(stderr, "wrong aruments provided, exiting...\n");
-		print_usage(argv[0]);
+		exit(EXIT_FAILURE);
 	}
-	
-	return 0;
+
+	exit(EXIT_SUCCESS);
 }
