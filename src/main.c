@@ -4,7 +4,6 @@
 int main(int args, char *argv[])
 {
 	int res;
-	printf("main ok\n");
 
 	if (0 != (res = validate_arguments(args, argv)))
 	{
