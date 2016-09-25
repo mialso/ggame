@@ -15,6 +15,7 @@ static char* validator_errors[] = {
 	"negative arguments provided",
 	"zero arguments provided",
 	"wrong field size provided: minimum value is "TO_S(MIN_FIELD)" and maximum is "TO_S(MAX_FIELD)"",
+	"wrong coordinates provided (greater than deck size)",
 	"no balls number provided",
 	"balls number is not valid: too high for provided deck size or lower 1",
 	"wrong arguments provided"
@@ -26,6 +27,7 @@ enum validator_err_named {
 	NEGATIVE_ARGS,
 	ZERO_ARGS,
 	WRONG_FIELD_SIZE,
+	WRONG_COORDS,
 	NO_BALLS_NUMBER,
 	BALLS_NUMBER_IS_NOT_VALID,
 	WRONG_ARGUMENTS
@@ -44,6 +46,8 @@ extern int validate_arguments(int args, char *argv[])
 	//uint64_t error = 0;
 	int deck = 0;
 	int balls = 0;
+	uint64_t coords_start_num = 0;
+	uint64_t counter = 0;
 	// check empty arguments
 	if (0 == (args-1)) {
 		error = EMPTY_ARGUMENTS;
@@ -63,6 +67,18 @@ extern int validate_arguments(int args, char *argv[])
 		error = WRONG_FIELD_SIZE;
 		goto error_exit;
 	}
+	// check coordinates to be not larger than deck size
+	coords_start_num = (args % 2) ? 2 : 3;
+	counter = args-1;
+	while(counter > coords_start_num)
+	{
+		if (deck < atoi(argv[counter])) {
+			error = WRONG_COORDS;
+			goto error_exit;
+		}
+		--counter;
+	}
+
 	if (2 > (args-1)) {
 		error = NO_BALLS_NUMBER;
 		goto error_exit;
@@ -76,9 +92,8 @@ extern int validate_arguments(int args, char *argv[])
 	return 0;
 	
 error_exit:
-	fprintf(stderr, "[validator.c]: <validate_arguments>: %s:%d\n",
-		validator_errors[error],
-		error
+	fprintf(stderr, "[validator.c]: <validate_arguments>: %s\n",
+		validator_errors[error]
 	);
 	print_usage(argv[0]);
 
