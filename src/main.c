@@ -1,29 +1,34 @@
-#include <gg_validator.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <string.h>
+
+#include <gg_validator.h>
+#include <gg_deck.h>
 
 #define STR(x) #x
 #define TO_STR(string) STR(string)
-#define AT(func) __FILE__ ":" TO_STR(__LINE__) ":"  TO_STR(func)
+
+#define AT get_string(__FILE__ ":"TO_STR(__LINE__)":", __func__)
 
 #define WALLS_DATA 4
 #define BALLS_DATA 2
 
+//static char buffer[1024];
 struct Array {
 	uint64_t size;
 	uint64_t *data;
 };
 
 int parse_walls_data(int args, char *argv[], struct Array *walls);
-int parse_bh_data(int args, char *argv[], struct Array *balls, struct Array *holes);
+int parse_bh_data(int args, char *argv[], struct Array *balls, struct Array *holes, uint64_t walls);
 void print_error(const char *location, char *var_name, int64_t data);
 void print_debug(const char *location, char *var_name, int64_t data);
 void print_debug_arr(uint64_t size, uint64_t *arr, char *name);
+const char *get_string(const char * base, const char *func);
 
 int main(int args, char *argv[])
 {
-	#define F main
 	uint64_t res;
 
 	struct Array balls;
@@ -37,20 +42,24 @@ int main(int args, char *argv[])
 	{
 		exit(EXIT_FAILURE);
 	}
-	print_debug(AT(F), "validator done, res", res);
+	print_debug(AT, "validator done, res", res);
 	// parse walls data from argv
 	if (0 != (res = parse_walls_data(args, argv, &walls)))
 	{
 		exit(EXIT_FAILURE);
 	}
-	print_debug(AT(F), "parse_walls_data done, res", res);
+	print_debug(AT, "parse_walls_data done, res", res);
 	print_debug_arr(walls.size, walls.data, "walls");
 	
 	// parse balls and holes data
-	if (0 != (res = parse_bh_data(args, argv, &balls, &holes)))
+	if (0 != (res = parse_bh_data(args, argv, &balls, &holes, walls.size)))
 	{
 			exit(EXIT_FAILURE);
 	}
+	print_debug(AT, "parse_bh_data done, res", res);
+	print_debug_arr(balls.size, balls.data, "balls");
+	print_debug_arr(holes.size, holes.data, "holes");
+
 
 	// create deck
 	/*
@@ -67,50 +76,84 @@ int main(int args, char *argv[])
  */
 int parse_walls_data(int args, char *argv[], struct Array *walls)
 {
-	#define F parse_walls_data
 	uint64_t balls = atoi(argv[2]);
 	uint64_t balls_and_holes_args = (balls * BALLS_DATA * 2) + 1;
-	print_debug(AT(F), "balls_and_holes_args", balls_and_holes_args);
-	int64_t args_left = args - 3 - balls_and_holes_args;
-	print_debug(AT(F), "args_left", args_left);
+	print_debug(AT, "balls_and_holes_args", balls_and_holes_args);
+	int64_t args_left = args - 2 - balls_and_holes_args;
+	print_debug(AT, "args_left", args_left);
 	int64_t walls_number = 0;
+	int64_t walls_coords = 0;
 	int64_t counter = 0;
 	// check if walls data is present
 	if (0 > args_left) {
-		print_error(AT(F), "args", args);
+		print_error(AT, "args", args);
 		return -1;
 	} else if (0 == args_left) {
+		walls->size = 0;
+		walls->data = NULL;
 		return 0;
 	}
+	--args_left;
 	// check if walls data is correct
 	if (0 != (args_left % WALLS_DATA)) {
-		print_error(AT(F), "args_left % WALLS_DATA", args_left % WALLS_DATA);
+		print_error(AT, "args_left % WALLS_DATA", args_left % WALLS_DATA);
 		return -1;
 	}
 	walls_number = atoi(argv[3]);
-	print_debug(AT(F), "walls_number", walls_number);
-	if (walls_number != (args_left/WALLS_DATA)) {
-		print_error(AT(F), "args_left", args_left);
+	walls_coords = walls_number*WALLS_DATA;
+	print_debug(AT, "walls_number", walls_number);
+	if (walls_coords != args_left) {
+		print_error(AT, "args_left", args_left);
    		return -1;
 	}	
 	
-	walls->data = calloc(args_left-1, sizeof(uint64_t));
+	walls->data = calloc(walls_coords, sizeof(uint64_t));
 	if (!walls->data) {
-		print_error(AT(F), "memory error from args_left =", args_left-1);
+		print_error(AT, "memory error from walls_coords =", walls_coords);
 		return -1;
 	}
-	for (counter = 1; counter <= (walls_number*WALLS_DATA); ++counter)
+	for (counter = 1; counter <= walls_coords; ++counter)
 	{
-		*(walls->data+counter-1) = atoi(argv[args-counter]);
+		*(walls->data+walls_coords-counter) = atoi(argv[args-counter]);
 	}
 	walls->size = walls_number * WALLS_DATA;
 	return 0;
 }
-int parse_bh_data(int args, char *argv[], struct Array *balls, struct Array *holes)
+int parse_bh_data(int args, char *argv[], struct Array *balls, struct Array *holes, uint64_t walls)
 {
-	#define F parse_bh_data
-	print_debug(AT(F), "not implemented yet", 0);
-	return 1;
+	uint64_t counter = 1;
+	uint64_t balls_number = atoi(argv[2])*BALLS_DATA;
+	print_debug(AT, "balls_number", balls_number);
+	uint64_t coords_to_parse = balls_number*2;
+	print_debug(AT, "coords_to_parse", coords_to_parse);
+	uint64_t start = (walls) ? 3 : 2;
+	balls->size = balls_number;
+	holes->size = balls_number;
+	balls->data = calloc(balls->size, sizeof(uint64_t));
+	if (!balls->data) {
+		print_error(AT, "memory error from balls->size =", balls->size);
+		return 1;
+	}
+	holes->data = calloc(holes->size, sizeof(uint64_t));
+	if (!holes->data) {
+		print_error(AT, "memory error from holes->size =", holes->size);
+		return 2;
+	}
+	while (counter <= coords_to_parse)
+	{
+		if (counter <= coords_to_parse/2)
+		{
+			//print_debug(AT, "ball inserted at ", counter);
+			*(balls->data+counter-1) = atoi(argv[start+counter]);
+		}
+	   	else
+		{
+			*(holes->data+counter-(coords_to_parse/2)-1) = atoi(argv[start+counter]);
+			//print_debug(AT, "hole inserted at ", counter);
+		}
+		++counter;
+	}
+	return 0;
 }
 void print_debug(const char *location, char *var_name, int64_t data)
 {
@@ -141,4 +184,12 @@ void print_debug_arr(uint64_t size, uint64_t *arr, char *name)
 		snprintf(num_string, 3, "%zu", i);
 		print_debug(name, num_string, (int)(*(arr+i)));
 	}
+}
+const char *get_string(const char *base, const char *func)
+{
+	static char buffer[1024];
+	memset(buffer, 0, 1024);
+	strcpy(buffer, base);
+	strcpy(&buffer[strlen(base)], func);
+	return buffer;
 }

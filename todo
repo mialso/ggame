@@ -1,0 +1,9 @@
+walls:
+	implement coords check to verify wall data is correct(fields are neighbors)
+	implement coords check to verify wall data is correct (fields are not the same)
+
+tests:
+	common functionality to test_util
+	commont tests to validator - this is to ve revisited to DRY at data type validation
+		zero, negative, counter
+	walls tests to walls, etc

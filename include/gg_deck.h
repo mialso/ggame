@@ -10,6 +10,8 @@ struct Field {
 };
 
 struct Deck {
-	struct **Field fields;
+	struct Field **fields;
 	uint64_t size;
 };
+
+#endif
