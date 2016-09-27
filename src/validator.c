@@ -3,8 +3,12 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#include <gg_util.h>
+
+/*
 #define QUOTE(data) #data
 #define TO_S(macro) QUOTE(macro)
+*/
 
 #define MAX_FIELD 1024
 #define MIN_FIELD 3
@@ -14,7 +18,7 @@ static char* validator_errors[] = {
 	"no arguments provided",
 	"negative arguments provided",
 	"zero arguments provided",
-	"wrong field size provided: minimum value is "TO_S(MIN_FIELD)" and maximum is "TO_S(MAX_FIELD)"",
+	"wrong field size provided: minimum value is "TO_STR(MIN_FIELD)" and maximum is "TO_STR(MAX_FIELD)"",
 	"wrong coordinates provided (greater than deck size)",
 	"no balls number provided",
 	"balls number is not valid: too high for provided deck size or lower 1",
@@ -116,5 +120,5 @@ int check_zero_negative(int size, char *arr[])
 void print_usage(char *prog_name)
 {
 	fprintf(stdout, "usage:\n");
-	fprintf(stdout, "%s <deck_size> <balls_number> <balls_coordinates> <holes_coordinates> <walls_coordinates>\n", prog_name);
+	fprintf(stdout, "%s <deck_size> <balls_number> <walls> <balls_coordinates> <holes_coordinates> <walls_coordinates>\n", prog_name);
 }

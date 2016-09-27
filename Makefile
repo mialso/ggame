@@ -9,7 +9,7 @@ target := $(BIN_DIR)run_game
 test_target := $(BIN_DIR)run_tests
 
 headers := $(wildcard include/*.h)
-objects := main.o validator.o
+objects := main.o validator.o util.o
 tests := validator_test.o validator.o
 
 all: $(objects)
@@ -23,6 +23,9 @@ main.o: src/main.c $(headers)
 #  modules
 validator.o: src/validator.c include/gg_validator.h
 	$(CC) $(GG_DEFINES) $(CFLAGS) -c src/validator.c
+
+util.o: src/util.c include/gg_util.h
+	$(CC) $(GG_DEFINES) $(CFLAGS) -c src/util.c
 
 #  tests
 validator_test.o: test/validator_test.c

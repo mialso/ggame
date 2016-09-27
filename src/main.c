@@ -1,20 +1,13 @@
 #include <stdlib.h>
 #include <stdint.h>
-#include <stdio.h>
-#include <string.h>
 
 #include <gg_validator.h>
 #include <gg_deck.h>
-
-#define STR(x) #x
-#define TO_STR(string) STR(string)
-
-#define AT get_string(__FILE__ ":"TO_STR(__LINE__)":", __func__)
+#include <gg_util.h>
 
 #define WALLS_DATA 4
 #define BALLS_DATA 2
 
-//static char buffer[1024];
 struct Array {
 	uint64_t size;
 	uint64_t *data;
@@ -22,10 +15,6 @@ struct Array {
 
 int parse_walls_data(int args, char *argv[], struct Array *walls);
 int parse_bh_data(int args, char *argv[], struct Array *balls, struct Array *holes, uint64_t walls);
-void print_error(const char *location, char *var_name, int64_t data);
-void print_debug(const char *location, char *var_name, int64_t data);
-void print_debug_arr(uint64_t size, uint64_t *arr, char *name);
-const char *get_string(const char * base, const char *func);
 
 int main(int args, char *argv[])
 {
@@ -119,6 +108,9 @@ int parse_walls_data(int args, char *argv[], struct Array *walls)
 	walls->size = walls_number * WALLS_DATA;
 	return 0;
 }
+/*
+ * purpose: to parse balls and holes data
+ */
 int parse_bh_data(int args, char *argv[], struct Array *balls, struct Array *holes, uint64_t walls)
 {
 	uint64_t counter = 1;
@@ -154,42 +146,4 @@ int parse_bh_data(int args, char *argv[], struct Array *balls, struct Array *hol
 		++counter;
 	}
 	return 0;
-}
-void print_debug(const char *location, char *var_name, int64_t data)
-{
-	fprintf(stdout, "[DEBUG]: %s(): %s = %ld\n",
-		location,
-		var_name,
-		data
-	);
-}	
-void print_error(const char *location, char *var_name, int64_t data)
-{
-	fprintf(stderr, "[ERROR]: %s(): %s = %ld\n",
-		location,
-		var_name,
-		data
-	);
-}
-void print_debug_arr(uint64_t size, uint64_t *arr, char *name)
-{
-	char num_string[4];
-	uint64_t i;
-	if (100 < size) {
-		print_debug(name, "array is too large, size", size);
-		return;
-	}
-	for (i = 0; i < size; ++i)
-	{
-		snprintf(num_string, 3, "%zu", i);
-		print_debug(name, num_string, (int)(*(arr+i)));
-	}
-}
-const char *get_string(const char *base, const char *func)
-{
-	static char buffer[1024];
-	memset(buffer, 0, 1024);
-	strcpy(buffer, base);
-	strcpy(&buffer[strlen(base)], func);
-	return buffer;
 }
